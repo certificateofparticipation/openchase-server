@@ -1,6 +1,8 @@
 import Router, {Request, Response} from "express"
-import IDatabase from '../../databases/Database'
-export default (database: IDatabase) => {
+import jwt from "jsonwebtoken"
+
+import IDatabase from "../../databases/Database"
+export default (database: IDatabase, jwtSecret: string) => {
     const router = Router();
 
     router.get('/api/v1/users/login', (req: Request, res: Response) => {
@@ -17,9 +19,14 @@ export default (database: IDatabase) => {
             return
         }
 
-        database.getUser(username, hash).then((allowed: boolean) => {
-            res.status(200)
-            res.send(allowed)
+        database.getUser(username, hash).then((allowed: [boolean, boolean]) => {
+            if (allowed[0]) {
+                res.status(200)
+                res.send(jwt.sign({admin: allowed[1]}, jwtSecret))
+            } else {
+                res.status(403)
+                res.send()
+            }
         })
     })
 

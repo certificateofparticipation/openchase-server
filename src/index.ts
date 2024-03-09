@@ -1,5 +1,7 @@
 import express, {Express} from "express"
 import dotenv from "dotenv"
+import * as crypto from "crypto";
+
 import IDatabase from "./databases/Database"
 import indexRouter from "./routes/index"
 import usersRouter from "./routes/users/index"
@@ -9,13 +11,15 @@ dotenv.config()
 const app: Express = express()
 const port = process.env.PORT || 3000
 
+const jwtSecret = crypto.randomBytes(32).toString("hex")
+
 const databaseType = process.env.DATABASE_TYPE || "sqlite"
 let database: IDatabase;
 switch (databaseType) {
     case "sqlite":
         console.log("Loading sqlite database")
         const sqlite_database = require("./databases/sqlite-database")
-        database = new sqlite_database()
+        database = new sqlite_database(jwtSecret)
         break
     /*
     case "mysql":
@@ -29,7 +33,7 @@ switch (databaseType) {
 }
 
 app.use(indexRouter)
-app.use(usersRouter(database))
+app.use(usersRouter(database, jwtSecret))
 
 app.listen(port, () => {
     console.log(`App started at http://localhost:${port}`)

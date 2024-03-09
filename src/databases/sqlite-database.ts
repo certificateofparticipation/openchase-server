@@ -4,7 +4,10 @@ import bcrypt from "bcrypt"
 
 class sqlite_database implements IDatabase {
     connection: Database;
-    constructor() {
+    jwtSecret: string;
+
+    constructor(jwtSecret: string) {
+        this.jwtSecret = jwtSecret
         this.connection = new sqlite3.Database("./database.db", (err) => {
             if (err) {
                 console.error("Something went wrong while connecting to the database!")
@@ -38,17 +41,22 @@ class sqlite_database implements IDatabase {
         })
     }
 
-    async getUser(user: string, hash: string): Promise<boolean> {
-        return new Promise<boolean>((res, rej) => {
-            this.connection.prepare("SELECT COUNT(*) FROM users WHERE user = ? AND hash = ?").get([user, hash], (err, rows: any) => {
+    async getUser(user: string, hash: string): Promise<[boolean, boolean]> {
+        return new Promise<[boolean, boolean]>((res, rej) => {
+            this.connection.prepare("SELECT * FROM users WHERE user = ? AND hash = ?").get([user, hash], (err, rows: any) => {
                 if (err) {
                     rej(err)
                 }
-                if (rows["COUNT(*)"] == 1) {
-                    res(true)
+                if (rows) {
+                    if (rows["admin"] == 1) {
+                        res([true, true])
+                    } else {
+                        res([true, false])
+                    }
                 } else {
-                    res(false)
+                    res([false, false])
                 }
+
             })
         })
     }
