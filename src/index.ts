@@ -1,13 +1,13 @@
 import express, {Express} from "express"
+import IDatabase from "./databases/Database"
 import indexRouter from "./routes/index"
+import usersRouter from "./routes/users/index"
 
 const app: Express = express()
 const port = process.env.PORT || 3000
 
-app.use(indexRouter)
-
 const databaseType = process.env.DATABASE_TYPE || "sqlite"
-let database;
+let database: IDatabase;
 switch (databaseType) {
     case "sqlite":
         console.log("Loading sqlite database")
@@ -22,10 +22,11 @@ switch (databaseType) {
         break
      */
     default:
-        console.error("Invalid database type!")
+        throw new Error("Invalid database type!")
 }
 
-database.create_experience()
+app.use(indexRouter)
+app.use(usersRouter(database))
 
 app.listen(port, () => {
     console.log(`App started at http://localhost:${port}`)
