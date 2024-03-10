@@ -2,7 +2,7 @@ import sqlite3, {Database} from "sqlite3"
 import IDatabase from './Database'
 import bcrypt from "bcrypt"
 
-class sqlite_database implements IDatabase {
+export default class sqlite_database implements IDatabase {
     connection: Database;
     jwtSecret: string;
 
@@ -61,5 +61,3 @@ class sqlite_database implements IDatabase {
         })
     }
 }
-
-module.exports = sqlite_database
