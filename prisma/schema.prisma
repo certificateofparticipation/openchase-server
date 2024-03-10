@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+model User {
+  user_id Int @id @default(autoincrement())
+
+  name String
+  hash String
+  admin Boolean
+
+  experiences Experience[]
+}
+
+model Experience {
+  experience_id Int @id @default(autoincrement())
+
+  name String
+  description String
+  hash String
+  team_mode Boolean
+
+  owner User @relation(fields: [owner_id], references: [user_id])
+  owner_id Int
+
+  file_missions File_Mission[]
+  text_missions Text_Mission[]
+
+  teams Team[]
+  players Player[]
+}
+
+model File_Mission {
+  mission_id Int @id @default(autoincrement())
+
+  name String
+  description String
+  points Int
+
+  experience Experience @relation(fields: [experience_id], references: [experience_id])
+  experience_id Int
+
+  submissions File_Submission[]
+}
+
+model Text_Mission {
+  mission_id Int @id @default(autoincrement())
+
+  name String
+  description String
+  points Int
+
+  experience Experience @relation(fields: [experience_id], references: [experience_id])
+  experience_id Int
+
+  submissions Text_Submission[]
+  answers Text_Answer[]
+}
+
+model Team {
+  team_id Int @id @default(autoincrement())
+
+  name String
+  hash String
+  points Int
+
+  experience Experience @relation(fields: [experience_id], references: [experience_id])
+  experience_id Int
+
+  file_submissions File_Submission[]
+  text_submissions Text_Submission[]
+  players Player[]
+}
+
+model File_Submission {
+  submission_id Int @id @default(autoincrement())
+
+  path String
+
+  mission File_Mission @relation(fields: [mission_id], references: [mission_id])
+  mission_id Int
+
+  team Team @relation(fields: [team_id], references: [team_id])
+  team_id Int
+}
+
+model Text_Submission {
+  submission_id Int @id @default(autoincrement())
+
+  answer String
+
+  mission Text_Mission @relation(fields: [mission_id], references: [mission_id])
+  mission_id Int
+
+  team Team @relation(fields: [team_id], references: [team_id])
+  team_id Int
+}
+
+model Text_Answer {
+  answer_id Int @id @default(autoincrement())
+
+  answer String
+
+  mission Text_Mission @relation(fields: [mission_id], references: [mission_id])
+  mission_id Int
+}
+
+model Player {
+  player_id Int @id @default(autoincrement())
+
+  name String
+
+  team Team @relation(fields: [team_id], references: [team_id])
+  team_id Int
+
+  experience Experience @relation(fields: [experience_id], references: [experience_id])
+  experience_id Int
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}

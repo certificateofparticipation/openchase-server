@@ -19,7 +19,7 @@ export let Database: IDatabase;
 switch (databaseType) {
     case "sqlite":
         console.log("Loading sqlite database")
-        Database = new SQLiteDatabase(JWTSecret)
+        Database = new SQLiteDatabase()
         break
     /*
     case "mysql":
