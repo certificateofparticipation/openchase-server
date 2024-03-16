@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken"
 import {JWTSecret} from "../app"
+import {Request, Response} from "express";
 
 interface JWTToken {
     admin: boolean
@@ -20,4 +21,14 @@ export async function verifyJWT(token: string): Promise<[boolean, boolean]> {
             }
         })
     })
+}
+
+export function getHeader(req: Request, res: Response, header: string, errorCode: number, errorMessage: string): string | null {
+    let result = req.get(header)
+    if (!result) {
+        res.status(errorCode)
+        res.send(errorMessage)
+        return null
+    }
+    return result
 }

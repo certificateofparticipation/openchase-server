@@ -47,4 +47,20 @@ export default class sqlite_database implements IDatabase {
             return Promise.resolve([true, user.admin])
         }
     }
+
+    async createUser(name: string, hash: string, admin: boolean): Promise<boolean> {
+        let userExists: [boolean, boolean] = await this.getUser(name, hash)
+        if (userExists[0]) {
+            return Promise.resolve(false)
+        } else {
+            await this.prisma.user.create({
+                data: {
+                    name: name,
+                    hash: hash,
+                    admin: admin
+                }
+            })
+            return Promise.resolve(true)
+        }
+    }
 }
