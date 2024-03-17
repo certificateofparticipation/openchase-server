@@ -32,8 +32,8 @@ switch (databaseType) {
         throw new Error("Invalid database type!")
 }
 
-app.use(indexRouter)
-app.use(usersRouter)
+app.use("/api/v1", indexRouter)
+app.use("/api/v1/users", usersRouter)
 
 app.listen(port, () => {
     console.log(`App started at http://localhost:${port}`)

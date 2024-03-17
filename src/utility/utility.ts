@@ -1,34 +1,52 @@
 import jwt from "jsonwebtoken"
 import {JWTSecret} from "../app"
-import {Request, Response} from "express";
-
-interface JWTToken {
-    admin: boolean
-}
+import {Request} from "express";
+import {JWTToken} from "./models";
 
 export function stripBearer(header: string): string {
     return header.replace("Bearer ", "")
 }
 
-export async function verifyJWT(token: string): Promise<[boolean, boolean]> {
-    return new Promise<[boolean, boolean]>((res, rej) => {
+export async function verifyJWT(token: string): Promise<JWTToken> {
+    return new Promise<JWTToken>((res, rej) => {
         jwt.verify(token, JWTSecret, (err, decoded) => {
             if (err) {
-                res([false, false])
+                rej()
             } else {
-                decoded = decoded as JWTToken
-                res([true, decoded.admin])
+                let decodedToken = decoded as JWTToken
+                res(decodedToken)
             }
         })
     })
 }
 
-export function getHeader(req: Request, res: Response, header: string, errorCode: number, errorMessage: string): string | null {
-    let result = req.get(header)
-    if (!result) {
-        res.status(errorCode)
-        res.send(errorMessage)
-        return null
-    }
-    return result
+export async function getHeaders(req: Request, ...headers: string[]): Promise<string[]> {
+    return new Promise<string[]>((res, rej) => {
+        let values: string[] = []
+        headers.forEach((header) => {
+            let result: string | undefined = req.get(header)
+            if (result == undefined) {
+                rej(header)
+            } else {
+                values.push(result)
+            }
+        })
+        res(values)
+    })
+
+}
+
+export async function verifyAuthorization(req: Request): Promise<JWTToken> {
+    return new Promise<JWTToken>((resolve, reject) => {
+        getHeaders(req, "Authorization").then(([token]) => {
+            token = stripBearer(token)
+            verifyJWT(token).then((jwtToken) => {
+                resolve(jwtToken)
+            }).catch(() => {
+                reject(403)
+            })
+        }).catch(() => {
+            reject(400)
+        })
+    })
 }
